@@ -63,12 +63,47 @@ URL hostname "..." resolves to a non-public IP address
 
 ## 安装
 
-### 1. 把插件放到一个固定位置
+有两种方式。**新手直接用方式一 —— 一条命令都不用敲。**
+
+### 方式一：把整个文件夹交给 DSH，让它自己装（最方便）
+
+不用开终端、不用手改 JSON，让 DSH 的 agent 自己动手。
+
+1. **把 `dsh-edge-search` 整个文件夹拖进 DSH 对话框**（或者直接把完整路径发给它）。
+   注意是**整个文件夹**，不是其中某个文件 —— 它要能看到 `package.json` 和 `index.js`。
+
+2. **附上一句话**（直接复制）：
+
+   > 帮我安装这个 DSH Host 插件：先把它复制到 `D:\tools\dsh-edge-search`
+   > （固定位置，不要放临时目录），再登记到 profile 的 `dependencies` 和
+   > `dsh.profile.bundles` 里，包名是 `@local/dsh-edge-search`。装完告诉我需要重启。
+
+3. DSH 会自己执行 `dsh plugin --profile desktop add`、把包名写进 bundles 配置。
+
+4. **最后由你手动完全退出 DSH，再重新打开。**
+   Host 插件只在启动时加载，而这一步它自己做不到 —— 它没法重启自己。
+   少了这一步，工具不会出现，看起来像「装失败了」。
+
+装完验证一下：
+
+```powershell
+dsh plugin --profile desktop list
+```
+
+出现 `@local/dsh-edge-search@file:...` 就成了。也可以在对话里让它随便读个网页试试。
+
+> 如果 agent 说自己没有终端权限、或者报 `dsh: command not found`，退回方式二手敲。
+
+---
+
+### 方式二：手动安装（可控，方便排查）
+
+#### 1. 把插件放到一个固定位置
 
 clone 或解压到一个你以后不会挪的目录，比如 `D:\tools\dsh-edge-search`。
 目录根下必须有 `package.json` 和 `index.js`。
 
-### 2. 装进你的 DSH profile
+#### 2. 装进你的 DSH profile
 
 ```powershell
 # 用 CLI 的话，把 desktop 换成你自己的 profile 名
@@ -80,7 +115,7 @@ dsh plugin --profile desktop add D:\tools\dsh-edge-search
 > 包名 `@local/dsh-edge-search` 里的 `@local` 是刻意的：**它不发布到 npm**，
 > 只从本地路径安装。`package.json` 里的 `"private": true` 也是同一目的——防止误发。
 
-### 3. 注册成 bundle —— **这步别跳过**
+#### 3. 注册成 bundle —— **这步别跳过**
 
 光装依赖不够。DSH 只加载 `dsh.profile.bundles` 里列出的插件，不在这里面的只会躺在
 `node_modules` 里，永远不加载。
@@ -102,11 +137,11 @@ dsh plugin --profile desktop add D:\tools\dsh-edge-search
 }
 ```
 
-### 4. 重启 DSH
+#### 4. 重启 DSH
 
 Host 插件在启动时加载，必须**完全退出再打开**，不是刷新窗口。
 
-### 5. 验证
+#### 5. 验证
 
 ```powershell
 dsh plugin --profile desktop list
@@ -196,7 +231,7 @@ Chromium 136 起，浏览器用**默认数据目录**时会**静默忽略** `--r
 
 | 现象 | 原因 | 处理 |
 |---|---|---|
-| `unknown tool "edge_read"` | 插件没加载 | 回去检查第 3 步（`bundles`），再重启 DSH |
+| `unknown tool "edge_read"` | 插件没加载 | 用方式一装的，先确认有没有**手动重启** DSH；还是不行就检查方式二的第 3 步（`bundles`） |
 | `配置项 edgePath 指向的可执行文件不存在` | 路径写错 | 检查路径，或删掉该项让插件自动探测 |
 | `Edge did not expose a debugger on port 9222` | 端口被占，或找不到 Edge | `Get-NetTCPConnection -LocalPort 9222`；改 `port` / `edgePath` |
 | 第一次调用要 5–10 秒 | 正在拉起 Edge | 正常。调试窗口别关，后续调用会复用它 |

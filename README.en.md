@@ -67,12 +67,51 @@ billed search API call.
 
 ## Install
 
-### 1. Put the plugin somewhere permanent
+There are two ways. **If you are new to this, use option 1 — no commands to type.**
+
+### Option 1: Hand the whole folder to DSH (easiest)
+
+No terminal, no hand-editing JSON — let the DSH agent do it.
+
+1. **Drag the entire `dsh-edge-search` folder into a DSH chat** (or send it the full path).
+   It must be the **whole folder**, not a single file — the agent needs to see `package.json`
+   and `index.js`.
+
+2. **Add this instruction** (copy as-is):
+
+   > Install this DSH host plugin for me: first copy it to `D:\tools\dsh-edge-search`
+   > (a permanent location, not a temp directory), then register it in the profile's
+   > `dependencies` and `dsh.profile.bundles`, package name `@local/dsh-edge-search`.
+   > Tell me when I need to restart.
+
+3. DSH runs `dsh plugin --profile desktop add` and adds the package name to the bundles config.
+
+4. **Quit DSH completely and relaunch it yourself.**
+   Host plugins are only loaded at startup, and the agent cannot restart itself.
+   Skip this and the tools simply will not appear — it looks like the install failed.
+
+Verify:
+
+```powershell
+dsh plugin --profile desktop list
+```
+
+`@local/dsh-edge-search@file:...` should be listed. You can also just ask the agent to read a
+page in the chat.
+
+> If the agent says it has no terminal access, or reports `dsh: command not found`, fall back
+> to option 2 and type the commands yourself.
+
+---
+
+### Option 2: Manual install (more control, easier to debug)
+
+#### 1. Put the plugin somewhere permanent
 
 Clone or unzip it to a folder you will not move, e.g. `D:\tools\dsh-edge-search`.
 The folder must contain `package.json` and `index.js` at its root.
 
-### 2. Add it to your DSH profile
+#### 2. Add it to your DSH profile
 
 ```powershell
 # replace "desktop" with your profile name if you use the CLI
@@ -84,7 +123,7 @@ This registers it as a `file:` dependency and installs it into the profile.
 > The `@local` part of the package name is deliberate: **this is not published to npm**, it is
 > installed from a local path only. `"private": true` in `package.json` enforces the same thing.
 
-### 3. Register it as a bundle — **don't skip this**
+#### 3. Register it as a bundle — **don't skip this**
 
 Installing the dependency is not enough. DSH only composes plugins listed in
 `dsh.profile.bundles`; anything else sits in `node_modules` and never loads.
@@ -106,11 +145,11 @@ and add the package name to the bundles array:
 }
 ```
 
-### 4. Restart DSH
+#### 4. Restart DSH
 
 Host plugins are loaded at startup. Quit the app completely and launch it again.
 
-### 5. Verify
+#### 5. Verify
 
 ```powershell
 dsh plugin --profile desktop list
@@ -203,7 +242,7 @@ touched.
 
 | Symptom | Cause | Fix |
 |---|---|---|
-| `unknown tool "edge_read"` | Plugin not loaded | Check step 3 (`bundles`) and restart DSH |
+| `unknown tool "edge_read"` | Plugin not loaded | Installed via option 1? Make sure you **restarted DSH manually**. Otherwise check option 2, step 3 (`bundles`) |
 | `edgePath` points at a file that does not exist | Typo in the path | Fix it, or remove the key to fall back to auto-detection |
 | `Edge did not expose a debugger on port 9222` | Port taken, or Edge missing | `Get-NetTCPConnection -LocalPort 9222`; set `port` / `edgePath` |
 | First call takes 5–10 s | It is launching Edge | Normal. Keep the debug window open; later calls reuse it |
