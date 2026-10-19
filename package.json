@@ -1,0 +1,57 @@
+{
+  "name": "@local/dsh-edge-search",
+  "version": "0.3.0",
+  "private": true,
+  "type": "module",
+  "description": "让 Harness 通过 CDP 驱动本机 Edge 浏览器：网页搜索、读正文（内置 web 工具被 SSRF 防护拦住时的兜底通道）",
+  "author": "Chuzhj",
+  "license": "MIT",
+  "homepage": "https://github.com/Chuzhj/dsh-edge-search#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Chuzhj/dsh-edge-search.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Chuzhj/dsh-edge-search/issues"
+  },
+  "keywords": [
+    "dsh",
+    "deepseek-harness",
+    "edge",
+    "cdp",
+    "chrome-devtools-protocol",
+    "web-search",
+    "fallback"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "main": "index.js",
+  "icon": "./icon.svg",
+  "meta": {
+    "title": "Edge 浏览器兜底",
+    "description": "通过 CDP 驱动本机 Edge 做网页搜索、读正文。无需任何 API Key，也不受 web_fetch 在 VPN fake-ip 模式下的拦截影响。"
+  },
+  "exports": {
+    ".": "./index.js",
+    "./package.json": "./package.json",
+    "./locale/*.json": "./locale/*.json"
+  },
+  "files": [
+    "index.js",
+    "cordis.patch.yml",
+    "lib/*.js",
+    "selftest.mjs",
+    "icon.svg",
+    "locale/*.json",
+    "skills/",
+    "README.md",
+    "README.en.md",
+    "CHANGELOG.md"
+  ],
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  }
+}

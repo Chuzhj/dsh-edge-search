@@ -1,0 +1,4 @@
+{
+  "title": "Edge Browser Fallback",
+  "description": "Drive the local Edge browser over CDP for web search and page reading. No search API key required, and unaffected by web_fetch's VPN fake-ip rejection."
+}

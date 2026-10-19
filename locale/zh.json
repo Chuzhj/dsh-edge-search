@@ -1,0 +1,4 @@
+{
+  "title": "Edge 浏览器兜底",
+  "description": "通过 CDP 驱动本机 Edge 做网页搜索、读正文。无需搜索 API Key，也不受 web_fetch 在 VPN fake-ip 模式下的拦截影响。"
+}

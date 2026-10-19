@@ -1,0 +1,2 @@
+# 统一换行符，避免 Windows 的 core.autocrlf 制造整文件变更噪音
+* text=auto eol=lf

@@ -1,0 +1,4 @@
+- insert:
+    - id: dsh-edge-search
+      name: '@local/dsh-edge-search'
+      config: {}
