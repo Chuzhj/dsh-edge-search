@@ -82,9 +82,12 @@ No terminal, no hand-editing JSON — let the DSH agent do it.
    > Install this DSH host plugin for me: first copy it to `D:\tools\dsh-edge-search`
    > (a permanent location, not a temp directory), then register it in the profile's
    > `dependencies` and `dsh.profile.bundles`, package name `@local/dsh-edge-search`.
+   > Also copy the `skills/web-fallback` folder into `%DSH_HOME%\skills\` — it is a companion
+   > skill that helps you remember to reach for these tools.
    > Tell me when I need to restart.
 
-3. DSH runs `dsh plugin --profile desktop add` and adds the package name to the bundles config.
+3. DSH runs `dsh plugin --profile desktop add`, adds the package name to the bundles config,
+   and copies the companion skill into `%DSH_HOME%\skills\`.
 
 4. **Quit DSH completely and relaunch it yourself.**
    Host plugins are only loaded at startup, and the agent cannot restart itself.
@@ -313,11 +316,69 @@ path. The plugin then fails to load, usually with no visible error — only a mi
 
 ---
 
-## Companion skill
+## Companion skill (optional, but recommended)
 
 `skills/web-fallback/SKILL.md` is a DSH skill that tells the agent **when** to reach for these
-tools. Copy the `skills/web-fallback` folder into `%DSH_HOME%\skills\` and it becomes available
-in new sessions.
+tools.
+
+**The plugin works without it** — install the plugin and the tools are there. But the agent may
+not think to try `edge_read` when `web_fetch` fails. With this skill installed, it switches over
+on its own when it hits `WEB_BLOCKED_URL` / `resolves to a non-public IP address`.
+
+### Option 1: let DSH install it
+
+The instruction in "Option 1" above already includes this step. If you already installed the
+plugin and only want the skill, just say:
+
+> Copy the `dsh-edge-search\skills\web-fallback` folder into `%DSH_HOME%\skills\`.
+
+### Option 2: copy it manually
+
+`%DSH_HOME%` is usually `C:\Users\<you>\.dsh`. Skills live under its `skills\` folder —
+**one folder per skill, and each folder must contain `SKILL.md`**:
+
+```powershell
+# replace D:\tools\dsh-edge-search with wherever you put the plugin
+$src = "D:\tools\dsh-edge-search\skills\web-fallback"
+$dst = "$env:USERPROFILE\.dsh\skills\web-fallback"
+New-Item -ItemType Directory -Force -Path $dst | Out-Null
+Copy-Item "$src\SKILL.md" $dst -Force
+```
+
+### Verify
+
+The layout should look like this:
+
+```
+C:\Users\<you>\.dsh\skills\
+└── web-fallback\
+    └── SKILL.md
+```
+
+Then **start a new session** (skills are loaded at session start), and ask "what skills do you
+have?" — `web-fallback` should be listed.
+
+### ⚠️ Do not install two copies
+
+If you previously installed a skill with the same purpose but a **different name** (e.g.
+`web-fetch-fallback`), **remove the old one first**. Their trigger conditions overlap almost
+completely, and having both makes the agent's choice unpredictable.
+
+```powershell
+# list what you have
+Get-ChildItem "$env:USERPROFILE\.dsh\skills" -Directory | Select-Object Name
+
+# delete the old one once you are sure (name is just an example)
+Remove-Item -Recurse -Force "$env:USERPROFILE\.dsh\skills\web-fetch-fallback"
+```
+
+### Uninstall
+
+Just delete the folder:
+
+```powershell
+Remove-Item -Recurse -Force "$env:USERPROFILE\.dsh\skills\web-fallback"
+```
 
 ---
 

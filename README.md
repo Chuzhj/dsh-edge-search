@@ -76,9 +76,13 @@ URL hostname "..." resolves to a non-public IP address
 
    > 帮我安装这个 DSH Host 插件：先把它复制到 `D:\tools\dsh-edge-search`
    > （固定位置，不要放临时目录），再登记到 profile 的 `dependencies` 和
-   > `dsh.profile.bundles` 里，包名是 `@local/dsh-edge-search`。装完告诉我需要重启。
+   > `dsh.profile.bundles` 里，包名是 `@local/dsh-edge-search`。
+   > 顺便把仓库里的 `skills/web-fallback` 整个文件夹复制到 `%DSH_HOME%\skills\` 下
+   > （这是一个配套技能，装上它 agent 才更容易想起用这两个工具）。
+   > 装完告诉我需要重启。
 
-3. DSH 会自己执行 `dsh plugin --profile desktop add`、把包名写进 bundles 配置。
+3. DSH 会自己执行 `dsh plugin --profile desktop add`、把包名写进 bundles 配置，
+   并把配套技能复制到 `%DSH_HOME%\skills\`。
 
 4. **最后由你手动完全退出 DSH，再重新打开。**
    Host 插件只在启动时加载，而这一步它自己做不到 —— 它没法重启自己。
@@ -301,10 +305,68 @@ dsh plugin --profile desktop install
 
 ---
 
-## 配套技能
+## 配套技能（可选，但强烈建议装）
 
-`skills/web-fallback/SKILL.md` 是给 agent 看的判断规则：**什么时候**该用这两个工具。
-把 `skills/web-fallback` 整个文件夹拷到 `%DSH_HOME%\skills\` 下，新会话就能用。
+`skills/web-fallback/SKILL.md` 是给 agent 看的判断规则：**什么时候**该换用这两个工具。
+
+**不装也能用**——插件装了，工具就在。但 agent 未必会在 `web_fetch` 失败时想起去试
+`edge_read`；装上这份技能，它遇到 `WEB_BLOCKED_URL` / `resolves to a non-public IP
+address` 时会主动切过来。
+
+### 装法一：让 DSH 自己装
+
+用「方式一」装插件时，那句指令里已经带了这一步（`skills/web-fallback` 复制到
+`%DSH_HOME%\skills\`）。如果你已经装完了插件、只补技能，直接说：
+
+> 把 `dsh-edge-search\skills\web-fallback` 整个文件夹复制到 `%DSH_HOME%\skills\` 下。
+
+### 装法二：手动复制
+
+`%DSH_HOME%` 一般是 `C:\Users\<你的用户名>\.dsh`。技能放在它下面的 `skills\` 里，
+**一个技能一个文件夹，文件夹里必须有 `SKILL.md`**：
+
+```powershell
+# 把 D:\tools\dsh-edge-search 换成你实际放插件的位置
+$src = "D:\tools\dsh-edge-search\skills\web-fallback"
+$dst = "$env:USERPROFILE\.dsh\skills\web-fallback"
+New-Item -ItemType Directory -Force -Path $dst | Out-Null
+Copy-Item "$src\SKILL.md" $dst -Force
+```
+
+### 验证
+
+装完的目录结构应该是这样：
+
+```
+C:\Users\<你的用户名>\.dsh\skills\
+└── web-fallback\
+    └── SKILL.md
+```
+
+然后**开一个新会话**（技能在会话启动时加载，老会话看不到），问一句
+「你现在有哪些技能？」，能看到 `web-fallback` 就成了。
+
+### ⚠️ 别装成两份
+
+如果你以前装过同功能、但**名字不同**的技能（比如 `web-fetch-fallback`），
+**先删掉旧的再装这份**。两者的触发条件几乎完全一样，同时存在会互相抢，
+行为变得难以预测。
+
+```powershell
+# 先看看现在有哪些
+Get-ChildItem "$env:USERPROFILE\.dsh\skills" -Directory | Select-Object Name
+
+# 确认是旧的再删（下面只是举例，按实际名字改）
+Remove-Item -Recurse -Force "$env:USERPROFILE\.dsh\skills\web-fetch-fallback"
+```
+
+### 卸载
+
+直接删文件夹即可：
+
+```powershell
+Remove-Item -Recurse -Force "$env:USERPROFILE\.dsh\skills\web-fallback"
+```
 
 ---
 
